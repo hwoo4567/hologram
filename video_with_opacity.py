@@ -3,12 +3,12 @@ import math
 
 # Path to your .blend file
 blend_file_path = "./test.blend"
-# Output path for the rendered video
-output_path = r"D:\zDev\vsc\project\hologram\render.mp4"
+# Output path for the rendered frames
+output_path = r"D:\zDev\vsc\project\hologram\frames\frame_"
 
 # Adjust the zoom level (focal length)
 zoom_level = 20  # Change this value to adjust zoom level
-# camera rotation radius
+# Camera rotation radius
 rotation_radius = 30
 
 # Load the .blend file
@@ -32,7 +32,7 @@ camera.location = (0, -10, 5)
 camera.rotation_euler = (math.radians(90), 0, 0)
 bpy.context.scene.camera = camera
 
-# Set the camera lens (zoom level) 
+# Set the camera lens (zoom level)
 camera.data.lens = zoom_level
 
 # Add an empty to act as the target for the camera to look at
@@ -63,16 +63,18 @@ for frame in range(1, frames + 1):
 # Set the background color to black
 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0, 0, 0, 1)  # (R, G, B, Alpha)
 
-# Set render settings for video
-bpy.context.scene.render.resolution_x = 1920
-bpy.context.scene.render.resolution_y = 1080
+# Set render settings for PNG sequence
+bpy.context.scene.render.resolution_x = 800
+bpy.context.scene.render.resolution_y = 480
 bpy.context.scene.render.fps = 24
 bpy.context.scene.render.filepath = output_path
-bpy.context.scene.render.image_settings.file_format = 'FFMPEG'
-bpy.context.scene.render.ffmpeg.format = 'MPEG4'
-bpy.context.scene.render.ffmpeg.codec = 'H264'
+bpy.context.scene.render.image_settings.file_format = 'PNG'
+bpy.context.scene.render.image_settings.color_mode = 'RGBA'  # To include transparency if needed
 bpy.context.scene.render.engine = 'BLENDER_WORKBENCH'
 bpy.context.scene.render.film_transparent = True
 
-# Render the animation
-bpy.ops.render.render(animation=True)
+# Render the animation frame by frame
+for frame in range(1, frames + 1):
+    bpy.context.scene.frame_set(frame)
+    bpy.context.scene.render.filepath = output_path + f"{frame:04d}.png"
+    bpy.ops.render.render(write_still=True)
