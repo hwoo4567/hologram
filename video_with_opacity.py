@@ -1,15 +1,13 @@
 import bpy
 import math
 
-# Path to your .blend file
-blend_file_path = "./test.blend"
-# Output path for the rendered frames
-output_path = r"D:\zDev\vsc\project\hologram\frames\frame_"
 
-# Adjust the zoom level (focal length)
-zoom_level = 20  # Change this value to adjust zoom level
-# Camera rotation radius
+blend_file_path = "./test.blend"
+output_path = r"D:\zDev\vsc\project\hologram\frames\frame_"
+zoom_level = 20
 rotation_radius = 30
+resolution = (800, 480)
+
 
 # Load the .blend file
 bpy.ops.wm.open_mainfile(filepath=blend_file_path)
@@ -64,8 +62,8 @@ for frame in range(1, frames + 1):
 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0, 0, 0, 1)  # (R, G, B, Alpha)
 
 # Set render settings for PNG sequence
-bpy.context.scene.render.resolution_x = 800
-bpy.context.scene.render.resolution_y = 480
+bpy.context.scene.render.resolution_x = resolution[0]
+bpy.context.scene.render.resolution_y = resolution[1]
 bpy.context.scene.render.fps = 24
 bpy.context.scene.render.filepath = output_path
 bpy.context.scene.render.image_settings.file_format = 'PNG'
