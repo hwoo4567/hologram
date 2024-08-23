@@ -1,9 +1,11 @@
 import bpy
 import math
+import os
 
 
 blend_file_path = "./test.blend"
-output_path = r"D:\zDev\vsc\project\hologram\frames\frame_"
+output_path = r".\result\frame_"
+output_path_abs = os.path.abspath(output_path)
 zoom_level = 20
 rotation_radius = 30
 resolution = (800, 480)
@@ -65,7 +67,7 @@ bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value =
 bpy.context.scene.render.resolution_x = resolution[0]
 bpy.context.scene.render.resolution_y = resolution[1]
 bpy.context.scene.render.fps = 24
-bpy.context.scene.render.filepath = output_path
+bpy.context.scene.render.filepath = output_path_abs
 bpy.context.scene.render.image_settings.file_format = 'PNG'
 bpy.context.scene.render.image_settings.color_mode = 'RGBA'  # To include transparency if needed
 bpy.context.scene.render.engine = 'BLENDER_WORKBENCH'
@@ -74,5 +76,5 @@ bpy.context.scene.render.film_transparent = True
 # Render the animation frame by frame
 for frame in range(1, frames + 1):
     bpy.context.scene.frame_set(frame)
-    bpy.context.scene.render.filepath = output_path + f"{frame:04d}.png"
+    bpy.context.scene.render.filepath = output_path_abs + f"{frame:04d}.png"
     bpy.ops.render.render(write_still=True)
