@@ -11,12 +11,16 @@ class ImageRotationUI(QWidget):
         self.setWindowTitle('Image Rotation UI')
         self.setGeometry(100, 100, 800, 600)
         self.setStyleSheet("background-color: black;")
+        
+        # 키보드 상태
+        self.key_left = False
+        self.key_right = False
 
         # 이미지 경로 설정 (여러 개의 이미지 사용)
-        path = "./result/render_7/"
+        path = "./result/render_9/"
         self.image_paths = [os.path.join(path, i) for i in os.listdir(path)]
-        
-        self.current_image_index = 0
+        self.max_image_index = len(self.image_paths)  # 90개의 이미지를 사용할 예정
+        self.current_image_index = -1
 
         # 이미지 크기 설정 (최대 100x100)
         self.max_size = (400, 400)
@@ -38,9 +42,32 @@ class ImageRotationUI(QWidget):
         self.update_images()
 
         self.show()
+        
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key.Key_Left:
+            self.key_left = True
+        if e.key() == Qt.Key.Key_Right:
+            self.key_right = True
+
+    def keyReleaseEvent(self,e):
+        if e.key() == Qt.Key.Key_Left:
+            self.key_left = False
+        if e.key() == Qt.Key.Key_Right:
+            self.key_right = False
+        
+    def get_next_index(self):
+        if self.key_left and not self.key_right:
+            return (self.current_image_index - 1) % len(self.image_paths)
+        if not self.key_left and self.key_right:
+            return (self.current_image_index + 1) % len(self.image_paths)
+        
+        return self.current_image_index
 
     def update_images(self):
-        # 현재 이미지 로드
+        # 다음 이미지로 인덱스 증가
+        self.current_image_index = self.get_next_index()
+        
+        # 이미지 로드
         current_image_path = self.image_paths[self.current_image_index]
         original_pixmap = QPixmap(current_image_path)
 
@@ -69,9 +96,6 @@ class ImageRotationUI(QWidget):
         right_pixmap = right_pixmap.scaled(self.max_size[0], self.max_size[1], Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.right_image.setPixmap(right_pixmap)
         self.right_image.setGeometry(800 - right_pixmap.width() - self.margin, (600 - right_pixmap.height()) // 2, right_pixmap.width(), right_pixmap.height())
-
-        # 다음 이미지로 인덱스 증가
-        self.current_image_index = (self.current_image_index + 1) % len(self.image_paths)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
