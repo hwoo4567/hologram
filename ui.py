@@ -20,7 +20,7 @@ class ImageRotationUI(QWidget):
         path = "./result/render_9/"
         self.image_paths = [os.path.join(path, i) for i in os.listdir(path)]
         self.max_image_index = len(self.image_paths)  # 90개의 이미지를 사용할 예정
-        self.current_image_index = -1
+        self.current_image_index = 0
 
         # 이미지 크기 설정 (최대 100x100)
         self.max_size = (400, 400)
@@ -54,14 +54,17 @@ class ImageRotationUI(QWidget):
             self.key_left = False
         if e.key() == Qt.Key.Key_Right:
             self.key_right = False
-        
-    def get_next_index(self):
+    
+    ##############################################################################
+    def get_next_index(self) -> int:
         if self.key_left and not self.key_right:
-            return (self.current_image_index - 1) % len(self.image_paths)
+            return (self.current_image_index - 1) % self.max_image_index
         if not self.key_left and self.key_right:
-            return (self.current_image_index + 1) % len(self.image_paths)
+            return (self.current_image_index + 1) % self.max_image_index
         
         return self.current_image_index
+    
+    ##############################################################################
 
     def update_images(self):
         # 다음 이미지로 인덱스 증가
