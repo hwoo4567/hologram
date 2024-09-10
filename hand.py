@@ -3,7 +3,8 @@ import numpy as np
 import mediapipe as mp
 import typing
 
-FINGER_CLOSE_THRESHOLD = 0.03
+FINGER_CLOSE_THRESHOLD = 0.06
+PICKING_GESTURE_THRESHOLD = 0.03
 STABLE_RADIUS = 0.01
 
 mp_draw = mp.solutions.drawing_utils
@@ -78,7 +79,7 @@ class HandRecog:
 
         return self.frame
     
-    # finger_n: 손가락 번호 (엄지: 1, 검지: 2 ...)
+    # finger_n: number of finger (thumb: 1, index: 2, middle: 3 ...)
     def isFingerClose(self, finger_n: int):
         if self.results.multi_hand_world_landmarks:
             # 여러 손이 인식되면 그 중 하나만
@@ -115,6 +116,23 @@ class HandRecog:
                 return False
         return True
     
+    def isPickingGesture(self):
+        if self.results.multi_hand_world_landmarks:
+            # 여러 손이 인식되면 그 중 하나만
+            handLms = self.results.multi_hand_world_landmarks[0]
+            fingers = handLms.landmark  # index 0 - 20
+            
+            thumb_tip = np.array([fingers[4].x, fingers[4].y])
+            index_tip = np.array([fingers[8].x, fingers[8].y])
+            
+            d = np.linalg.norm(thumb_tip - index_tip)
+            if d <= PICKING_GESTURE_THRESHOLD:
+                return True
+            else:
+                return False
+
+        return False
+    
     def getPointFromIdx(self, idx: int) -> tuple[float, float]:
         if self.hands:
             # 여러 손이 인식되면 그 중 하나만
@@ -147,7 +165,9 @@ if __name__ == "__main__":
         if not ret:
             break
 
-        frame = HandRecog(frame).drawHandPoint()
+        recog = HandRecog(frame)
+        print("thumb and index finger are close:", recog.isPickingGesture())
+        frame = recog.drawHandPoint()
         
         cv2.imshow('Hand Tracking', frame)
 
