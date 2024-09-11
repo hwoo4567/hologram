@@ -17,16 +17,16 @@ class ImageRotationUI(QWidget):
         self.key_right = False
 
         # 이미지 경로 설정 (여러 개의 이미지 사용)
-        path = "./result/render_9/"
+        path = "./render/"
         self.image_paths = [os.path.join(path, i) for i in os.listdir(path)]
         self.max_image_index = len(self.image_paths)  # 90개의 이미지를 사용할 예정
         self.current_image_index = 0
 
         # 이미지 크기 설정 (최대 100x100)
-        self.max_size = (400, 400)
+        self.max_size = (500, 500)
         
         # 여백 설정
-        self.margin = 50
+        self.margin = 20
 
         # 이미지 라벨 초기화
         self.top_image = QLabel(self)
