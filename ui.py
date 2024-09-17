@@ -17,7 +17,7 @@ class ImageRotationUI(QWidget):
         self.key_right = False
 
         # 이미지 경로 설정 (여러 개의 이미지 사용)
-        path = "./render/"
+        path = "./render/model_1"
         self.image_paths = [os.path.join(path, i) for i in os.listdir(path)]
         self.max_image_index = len(self.image_paths)  # 90개의 이미지를 사용할 예정
         self.current_image_index = 0
