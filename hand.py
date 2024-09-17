@@ -1,14 +1,10 @@
 import cv2
 import numpy as np
-import mediapipe as mp
 import typing
 
 FINGER_CLOSE_THRESHOLD = 0.06
 PICKING_GESTURE_THRESHOLD = 0.03
 STABLE_RADIUS = 0.01
-
-mp_draw = mp.solutions.drawing_utils
-mp_hands = mp.solutions.hands
 
 class Stabilizer:
     singleton = None
@@ -39,10 +35,12 @@ class Stabilizer:
             return x, y
         
 class HandRecog:
-    def __init__(self, model, frame, stabilization=False):
+    def __init__(self, model, mp_draw, mp_hands, frame, stabilization=False):
         """frame: image(MatLike) read from cap.read()"""
         
         self.frame = frame
+        self.mp_draw = mp_draw
+        self.mp_hands = mp_hands
         
         if stabilization:
             self.stabilizer = Stabilizer.get()
@@ -74,7 +72,7 @@ class HandRecog:
                     cv2.circle(self.frame, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
                     
                 # 점마다 라인을 연결
-                mp_draw.draw_landmarks(self.frame, handLms, mp_hands.HAND_CONNECTIONS)
+                self.mp_draw.draw_landmarks(self.frame, handLms, self.mp_hands.HAND_CONNECTIONS)
 
         return self.frame
     
@@ -155,6 +153,7 @@ class HandRecog:
 
 
 if __name__ == "__main__":
+    import mediapipe as mp
     drawingModule = mp.solutions.drawing_utils
     handsModule = mp.solutions.hands
 
@@ -171,7 +170,7 @@ if __name__ == "__main__":
             if not ret:
                 break
 
-            recog = HandRecog(hands, frame)
+            recog = HandRecog(hands, drawingModule, handsModule, frame)
             print("thumb and index finger are close:", recog.isPickingGesture())
             frame = recog.drawHandPoint()
             
