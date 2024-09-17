@@ -48,10 +48,9 @@ class HandRecog:
             self.stabilizer = Stabilizer.get()
         else:
             self.stabilizer = None
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        if rgb_frame is not None:
-            self.results = model.process(rgb_frame)
+        if frame is not None:
+            self.results = model.process(frame)
         else:
             raise TypeError("카메라가 존재하지 않습니다.")
         

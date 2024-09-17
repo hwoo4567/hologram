@@ -28,8 +28,6 @@ with handsModule.Hands(
         # Capture the frame
         frame = picam2.capture_array()
         frame = np.ascontiguousarray(frame, dtype=np.uint8)
-
-        # Convert the frame to RGB as required by Mediapipe
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # Process the frame to detect hands

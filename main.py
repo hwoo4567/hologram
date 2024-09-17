@@ -1,12 +1,13 @@
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import QtGui
 import sys
-import ui
 import cv2
-import numpy as np
-import hand
 import mediapipe as mp
+import numpy as np
 from picamera2 import Picamera2
+
+import ui
+import hand
 
 
 # 기준 벡터 (0, 1) (y축 단위 벡터)
@@ -54,7 +55,10 @@ class WithCameraUI(ui.ImageRotationUI):
     def get_next_index(self) -> int:
         current_index = super().get_next_index()
         frame = self.picam2.capture_array()
-        recog = hand.HandRecog(self.model, frame)
+        frame = np.ascontiguousarray(frame, dtype=np.uint8)
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        recog = hand.HandRecog(self.model, frame_rgb)
         
         print("thumb and index finger are close:", recog.isPickingGesture())
         if not recog.isPickingGesture():
