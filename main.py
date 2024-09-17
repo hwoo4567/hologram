@@ -40,13 +40,15 @@ def calculate_angle(a):
 
 
 class WithCameraUI(ui.ImageRotationUI):
-    def __init__(self, model):
+    def __init__(self, model, mp_draw, mp_hands):
         self.picam2 = Picamera2()
-        camera_config = self.picam2.create_preview_configuration()
+        camera_config = self.picam2.create_preview_configuration(main={"size": (640, 480)})
         self.picam2.configure(camera_config)
         self.picam2.start()
 
         self.model = model
+        self.mp_draw = mp_draw
+        self.mp_hands = mp_hands
         super().__init__()
      
     def update_images(self):
@@ -58,7 +60,7 @@ class WithCameraUI(ui.ImageRotationUI):
         frame = np.ascontiguousarray(frame, dtype=np.uint8)
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        recog = hand.HandRecog(self.model, frame_rgb)
+        recog = hand.HandRecog(self.model, self.mp_draw, self.mp_hands, frame_rgb)
         
         print("thumb and index finger are close:", recog.isPickingGesture())
         if not recog.isPickingGesture():
@@ -85,6 +87,7 @@ class WithCameraUI(ui.ImageRotationUI):
         super().closeEvent(e)
 
 
+drawingModule = mp.solutions.drawing_utils
 handsModule = mp.solutions.hands
 with handsModule.Hands(
     static_image_mode=False,
@@ -93,5 +96,5 @@ with handsModule.Hands(
     max_num_hands=2
 ) as hands:
     app = QApplication(sys.argv)
-    window = WithCameraUI(hands)
+    window = WithCameraUI(hands, drawingModule, handsModule)
     sys.exit(app.exec_())
