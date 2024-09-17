@@ -20,12 +20,8 @@ class CameraWindow(QMainWindow):
 
         # Initialize the camera
         self.picam2 = Picamera2()
-
-        # Configure the camera for preview mode (lower latency)
         camera_config = self.picam2.create_preview_configuration()
         self.picam2.configure(camera_config)
-
-        # Start the camera
         self.picam2.start()
 
         # QLabel to display the camera feed

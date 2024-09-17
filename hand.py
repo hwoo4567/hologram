@@ -9,7 +9,6 @@ STABLE_RADIUS = 0.01
 
 mp_draw = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands()
 
 class Stabilizer:
     singleton = None
@@ -40,7 +39,7 @@ class Stabilizer:
             return x, y
         
 class HandRecog:
-    def __init__(self, frame, stabilization=False):
+    def __init__(self, model, frame, stabilization=False):
         """frame: image(MatLike) read from cap.read()"""
         
         self.frame = frame
@@ -52,7 +51,7 @@ class HandRecog:
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         if rgb_frame is not None:
-            self.results = hands.process(rgb_frame)
+            self.results = model.process(rgb_frame)
         else:
             raise TypeError("카메라가 존재하지 않습니다.")
         
@@ -67,6 +66,7 @@ class HandRecog:
         if self.hands:
             # 각 손에 대한 반복
             for handLms in self.hands:
+                print(self.frame.shape)
                 for id, lm in enumerate(handLms.landmark):
                     h, w, c = self.frame.shape
                     cx, cy = int(lm.x * w), int(lm.y * h)
@@ -154,27 +154,32 @@ class HandRecog:
         else:
             return self.stabilizer(x, y)
 
-def closeHandModel():
-    hands.close()
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture(0)
+    drawingModule = mp.solutions.drawing_utils
+    handsModule = mp.solutions.hands
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+    with handsModule.Hands(
+        static_image_mode=False,
+        min_detection_confidence=0.4,
+        min_tracking_confidence=0.4,
+        max_num_hands=2
+    ) as hands:
+        cap = cv2.VideoCapture(0)
 
-        recog = HandRecog(frame)
-        print("thumb and index finger are close:", recog.isPickingGesture())
-        frame = recog.drawHandPoint()
-        
-        cv2.imshow('Hand Tracking', frame)
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+            recog = HandRecog(hands, frame)
+            print("thumb and index finger are close:", recog.isPickingGesture())
+            frame = recog.drawHandPoint()
+            
+            cv2.imshow('Hand Tracking', frame)
 
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
-    closeHandModel()
     cap.release()
     cv2.destroyAllWindows()

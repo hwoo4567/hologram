@@ -5,6 +5,9 @@ import ui
 import cv2
 import numpy as np
 import hand
+import mediapipe as mp
+from picamera2 import Picamera2
+
 
 # 기준 벡터 (0, 1) (y축 단위 벡터)
 reference_vector = np.array([0, -1])
@@ -36,8 +39,13 @@ def calculate_angle(a):
 
 
 class WithCameraUI(ui.ImageRotationUI):
-    def __init__(self):
-        self.cap = cv2.VideoCapture(0)
+    def __init__(self, model):
+        self.picam2 = Picamera2()
+        camera_config = self.picam2.create_preview_configuration()
+        self.picam2.configure(camera_config)
+        self.picam2.start()
+
+        self.model = model
         super().__init__()
      
     def update_images(self):
@@ -45,15 +53,9 @@ class WithCameraUI(ui.ImageRotationUI):
         
     def get_next_index(self) -> int:
         current_index = super().get_next_index()
-        # 0 - 89
-        if not self.cap.isOpened():
-            return current_index
+        frame = self.picam2.capture_array()
+        recog = hand.HandRecog(self.model, frame)
         
-        ret, frame = self.cap.read()
-        if not ret:
-            raise RuntimeError("no ret from camera")
-
-        recog = hand.HandRecog(frame)
         print("thumb and index finger are close:", recog.isPickingGesture())
         if not recog.isPickingGesture():
             return current_index
@@ -75,11 +77,17 @@ class WithCameraUI(ui.ImageRotationUI):
             return current_index
 
     def closeEvent(self, e: QtGui.QCloseEvent):
-        hand.closeHandModel()
         self.cap.release()
         super().closeEvent(e)
 
 
-app = QApplication(sys.argv)
-window = WithCameraUI()
-sys.exit(app.exec_())
+handsModule = mp.solutions.hands
+with handsModule.Hands(
+    static_image_mode=False,
+    min_detection_confidence=0.4,
+    min_tracking_confidence=0.4,
+    max_num_hands=2
+) as hands:
+    app = QApplication(sys.argv)
+    window = WithCameraUI(hands)
+    sys.exit(app.exec_())
