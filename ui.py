@@ -65,7 +65,7 @@ class ImageRotationUI(QWidget):
     
     def set_image(self, image_path):
         self.path = image_path
-        self.image_paths = [os.self.path.join(self.path, i) for i in os.listdir(self.path)]
+        self.image_paths = [os.path.join(self.path, i) for i in os.listdir(self.path)]
         self.max_image_index = len(self.image_paths)  # 90개의 이미지를 사용할 예정
         if self.max_image_index != 90:
             raise ValueError("the number of images is not 90.")
