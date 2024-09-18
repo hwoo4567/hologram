@@ -2,9 +2,16 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtGui import QPixmap, QTransform
 from PyQt5.QtCore import Qt, QTimer
 import os
+import sys
+
+RENDER_MODEL_PATHS = [
+    "./render/model_1",
+    "./render/model_2",
+    "./render/model_3"
+]
 
 class ImageRotationUI(QWidget):
-    def __init__(self):
+    def __init__(self, image_path="./render/model_1"):
         super().__init__()
 
         self.setWindowTitle('Image Rotation UI')
@@ -16,10 +23,7 @@ class ImageRotationUI(QWidget):
         self.key_right = False
 
         # 이미지 경로 설정 (여러 개의 이미지 사용)
-        path = "./render/model_1"
-        self.image_paths = [os.path.join(path, i) for i in os.listdir(path)]
-        self.max_image_index = len(self.image_paths)  # 90개의 이미지를 사용할 예정
-        self.current_image_index = 0
+        self.set_image(image_path)
 
         # 이미지 크기 설정 (최대 100x100)
         self.max_size = (500, 500)
@@ -46,11 +50,28 @@ class ImageRotationUI(QWidget):
         if e.key() == Qt.Key.Key_Right:
             self.key_right = True
 
+        if e.key() == Qt.Key.Key_1:
+            self.set_image(RENDER_MODEL_PATHS[0])
+        elif e.key() == Qt.Key.Key_2:
+            self.set_image(RENDER_MODEL_PATHS[1])
+        elif e.key() == Qt.Key.Key_3:
+            self.set_image(RENDER_MODEL_PATHS[2])
+
     def keyReleaseEvent(self,e):
         if e.key() == Qt.Key.Key_Left:
             self.key_left = False
         if e.key() == Qt.Key.Key_Right:
             self.key_right = False
+    
+    def set_image(self, image_path):
+        self.path = image_path
+        self.image_paths = [os.self.path.join(self.path, i) for i in os.listdir(self.path)]
+        self.max_image_index = len(self.image_paths)  # 90개의 이미지를 사용할 예정
+        if self.max_image_index != 90:
+            raise ValueError("the number of images is not 90.")
+        
+        self.current_image_index = 0
+        print("model path:", self.path)
     
     ##############################################################################
     def get_next_index(self) -> int:
