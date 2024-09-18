@@ -9,6 +9,9 @@ from picamera2 import Picamera2
 import ui
 import hand
 
+import os
+os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH")
+
 
 # 기준 벡터 (0, 1) (y축 단위 벡터)
 reference_vector = np.array([0, -1])
