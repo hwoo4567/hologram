@@ -26,7 +26,7 @@ class ImageRotationUI(QWidget):
         self.set_image(image_path)
 
         # 이미지 크기 설정 (최대 100x100)
-        self.max_size = (500, 500)
+        self.max_size = (450, 450)
         
         # 여백 설정
         self.margin = 20
