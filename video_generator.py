@@ -4,8 +4,8 @@ import os
 from PIL import Image, ImageEnhance
 
 
-blend_file_path = "./test.blend"
-output_path = r".\render\frame_"
+blend_file_path = "./blend/christmas.blend"
+output_path = r".\render\model_3\frame_"
 output_path_abs = os.path.abspath(output_path)
 zoom_level = 20
 rotation_radius = 30
