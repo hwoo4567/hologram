@@ -1,4 +1,3 @@
-import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtGui import QPixmap, QTransform
 from PyQt5.QtCore import Qt, QTimer
@@ -38,8 +37,6 @@ class ImageRotationUI(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_images)
         self.timer.start(100)  # 100ms = 0.1초
-
-        self.update_images()
 
         self.show()
         
@@ -101,6 +98,6 @@ class ImageRotationUI(QWidget):
         self.right_image.setGeometry(800 - right_pixmap.width() - self.margin, (600 - right_pixmap.height()) // 2, right_pixmap.width(), right_pixmap.height())
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = QApplication([])
     window = ImageRotationUI()
     sys.exit(app.exec_())
