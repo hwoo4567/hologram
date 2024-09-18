@@ -1,21 +1,31 @@
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import QtGui
 import sys
-import cv2
 import mediapipe as mp
 import numpy as np
-from picamera2 import Picamera2
+import os
 
+import camera_load
 import ui
 import hand
 
-import os
-os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH")
+# wtf: ????????????????????????????????????????????????????????
+if sys.platform != "win32":
+    os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH")
+
+# 0 or 1
+ROTATION_DIRECTION = 1
+
+def cmdClear():
+    if sys.platform == "win32":
+        os.system("cls")
+    else:
+        os.system("clear")
 
 
 # 기준 벡터 (0, 1) (y축 단위 벡터)
 reference_vector = np.array([0, -1])
-def calculate_angle(a):
+def delta_angle(a):
     global reference_vector
     # 벡터 크기 (norm)
     norm_reference = np.linalg.norm(reference_vector)
@@ -31,41 +41,32 @@ def calculate_angle(a):
     # 외적을 사용하여 회전 방향을 확인
     cross_product = np.cross(reference_vector, a)
     
-    # 시계방향(음수), 반시계방향(양수) 판별
-    if cross_product > 0:
+    # 방향 판별
+    if (cross_product < 0 and not ROTATION_DIRECTION) or (cross_product > 0 and ROTATION_DIRECTION):
         angle_degrees = np.degrees(theta_radians)
     else:
         angle_degrees = 360 - np.degrees(theta_radians)
     
-    if angle_degrees >= 4:
-        reference_vector = a
+    reference_vector = a
     return angle_degrees
-
 
 class WithCameraUI(ui.ImageRotationUI):
     def __init__(self, model, mp_draw, mp_hands):
-        self.picam2 = Picamera2()
-        camera_config = self.picam2.create_preview_configuration(main={"size": (640, 480)})
-        self.picam2.configure(camera_config)
-        self.picam2.start()
+        self.cam = camera_load.newCamera()
 
         self.model = model
         self.mp_draw = mp_draw
         self.mp_hands = mp_hands
         super().__init__()
-     
-    def update_images(self):
-        super().update_images()
         
     def get_next_index(self) -> int:
         current_index = super().get_next_index()
-        frame = self.picam2.capture_array()
-        frame = np.ascontiguousarray(frame, dtype=np.uint8)
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-        recog = hand.HandRecog(self.model, self.mp_draw, self.mp_hands, frame_rgb)
+        frame = camera_load.getFrame(self.cam)
+        recog = hand.HandRecog(self.model, self.mp_draw, self.mp_hands, frame)
         
+        cmdClear()
         print("thumb and index finger are close:", recog.isPickingGesture())
+
         if not recog.isPickingGesture():
             return current_index
 
@@ -77,16 +78,18 @@ class WithCameraUI(ui.ImageRotationUI):
         middle_mcp_point = np.array([*recog.getPointFromIdx(9)])
         
         hand_direction_vec = middle_mcp_point - wrist_point
-        angle = calculate_angle(hand_direction_vec)
-        print(angle)
+        angle = delta_angle(hand_direction_vec)
+
+        print("angle: %.3f degree" % angle)
+
         try:
-            result_idx = int(angle // 4)
+            result_idx = round(angle / 4)
             return (current_index + result_idx) % self.max_image_index
         except ValueError:
             return current_index
 
-    def closeEvent(self, e: QtGui.QCloseEvent):
-        self.cap.release()
+    def closeEvent(self, e):
+        camera_load.closeCamera(self.cam)
         super().closeEvent(e)
 
 
