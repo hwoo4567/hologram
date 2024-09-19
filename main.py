@@ -57,6 +57,7 @@ class WithCameraUI(ui.ImageRotationUI):
         self.model = model
         self.mp_draw = mp_draw
         self.mp_hands = mp_hands
+        self.hand_found = False
         super().__init__()
         
     def get_next_index(self) -> int:
@@ -65,9 +66,11 @@ class WithCameraUI(ui.ImageRotationUI):
         recog = hand.HandRecog(self.model, self.mp_draw, self.mp_hands, frame)
         
         cmdClear()
+        print("hand found:", recog.handExists())
         print("thumb and index finger are close:", recog.isPickingGesture())
 
-        if not recog.isPickingGesture():
+        self.hand_found = recog.handExists()
+        if not self.hand_found or not recog.isPickingGesture():
             return current_index
 
         # if doing picking gesture
@@ -88,6 +91,13 @@ class WithCameraUI(ui.ImageRotationUI):
         except ValueError:
             return current_index
 
+    def update_images(self):
+        super().update_images()
+        if self.hand_found:
+            self.setStyleSheet("background-color: black;")
+        else:
+            self.setStyleSheet("background-color: gray;")
+        
     def closeEvent(self, e):
         camera_load.closeCamera(self.cam)
         super().closeEvent(e)
